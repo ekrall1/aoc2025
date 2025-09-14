@@ -92,10 +92,8 @@
       src   = ./.;
       mixEnv = "test";
 
-      ERL_LIBS = "";      # <- ensure variable is defined
-
       checkPhase = ''
-        export ERL_LIBS=${ERL_LIBS}
+        export ERL_LIBS="${src}/lib"
         mix test
       '';
       doCheck = true;
