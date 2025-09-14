@@ -87,16 +87,19 @@
       '';
     };
 
-    checks.${system}.aoc2025-test = pkgs.beamPackages.mixRelease {
-      pname = "aoc2025";
-      src   = ./.;
-      mixEnv = "test";
-
-      checkPhase = ''
-        mix test
-      '';
-      doCheck = true;
-    };
+        checks.aoc2025-test = pkgs.stdenv.mkDerivation {
+          name = "aoc2025-test";
+          src = ./.;
+          buildInputs = [ pkgs.elixir ];
+          ERL_LIBS = "";
+          buildPhase = "true";
+          checkPhase = ''
+            export ERL_LIBS=${ERL_LIBS}
+            mix test
+          '';
+          installPhase = "mkdir -p $out";
+          doCheck = true;
+        };
 
   };
 }
