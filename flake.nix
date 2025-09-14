@@ -93,7 +93,6 @@
       mixEnv = "test";
 
       checkPhase = ''
-        export ERL_LIBS="./lib"
         mix test
       '';
       doCheck = true;
