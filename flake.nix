@@ -24,8 +24,11 @@
         ]) ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [ ];
     };
 
-    src = ./.;
+    # ----------- IMPORTANT: include working tree (tracked + untracked) in src -----------
+    rawSrc = builtins.path { path = ./.; name = "aoc2025-src"; };
+    src = builtins.path { path = ./.; name = "aoc2025-src"; };
 
+    # Common env for mix tasks in derivations
     mixEnv = ''
       export LC_ALL=C.UTF-8
       export HOME="$TMPDIR"
@@ -75,38 +78,41 @@
       '';
     };
 
-    # ---------- DEFAULT PACKAGE (builds escript -> $out/bin/aoc2025) ----------
-packages.${system}.default = pkgs.stdenv.mkDerivation {
-  name = "aoc2025";
-  inherit src;
-  nativeBuildInputs = [ beam.erlang elixir beam.rebar3 pkgs.cacert ];
-  phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
+    # -------------------- DEFAULT PACKAGE: builds escript -> $out/bin/aoc2025 --------------------
+    packages.${system}.default = pkgs.stdenv.mkDerivation {
+      name = "aoc2025";
+      inherit src;
+      nativeBuildInputs = [ beam.erlang elixir beam.rebar3 pkgs.cacert ];
+      phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
 
-  buildPhase = ''
-    set -euo pipefail
-    ${listTree}
-    export MIX_ENV=prod
-    ${mixEnv}
+      buildPhase = ''
+        set -euo pipefail
+        ${listTree}
+        export MIX_ENV=prod
+        ${mixEnv}
 
-    # 1) clean + compile once
-    mix clean
-    mix compile --no-deps-check --no-archives-check
+        # fail early if lib/ isn't in src
+        [ -d lib ] || { echo "FATAL: lib/ missing from Nix src"; ls -la; exit 1; }
 
-    # 2) expose compiled beams to the VM that runs escript.build
-    export ERL_LIBS="$PWD/_build/prod/lib"
+        # 1) clean + compile once
+        mix clean
+        mix compile --no-deps-check --no-archives-check
 
-    # 3) build the escript WITHOUT compiling again (keeps the path)
-    mix escript.build --no-compile --no-deps-check --no-archives-check
-  '';
+        # 2) ensure compiled beams are on the code path for escript build
+        export ERL_LIBS="$PWD/_build/prod/lib"
 
-  installPhase = ''
-    set -euo pipefail
-    mkdir -p $out/bin
-    install -Dm755 ./aoc2025 $out/bin/aoc2025
-  '';
-};
+        # 3) build escript without compiling again
+        mix escript.build --no-compile --no-deps-check --no-archives-check
+      '';
 
-    # ---------- CHECKS (doctests working under Nix) ----------
+      installPhase = ''
+        set -euo pipefail
+        mkdir -p $out/bin
+        install -Dm755 ./aoc2025 $out/bin/aoc2025
+      '';
+    };
+
+    # -------------------- CHECKS: doctests work under Nix --------------------
     checks.${system}.aoc2025-test = pkgs.stdenv.mkDerivation {
       name = "aoc2025-test";
       inherit src;
@@ -118,6 +124,9 @@ packages.${system}.default = pkgs.stdenv.mkDerivation {
         ${listTree}
         export MIX_ENV=test
         ${mixEnv}
+
+        # fail early if lib/ isn't in src
+        [ -d lib ] || { echo "FATAL: lib/ missing from Nix src"; ls -la; exit 1; }
 
         # 1) Clean & compile app for :test (no deps/network)
         mix clean

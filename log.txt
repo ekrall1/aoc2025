@@ -1,0 +1,76 @@
+Running phase: unpackPhase
+@nix { "action": "setPhase", "phase": "unpackPhase" }
+unpacking source archive /nix/store/g9hl6qwarny4xhy7rga6zlpzv6zkhid4-vz3bw2gn95px61pmsrllkq0q2jyqbv6g-source
+source root is vz3bw2gn95px61pmsrllkq0q2jyqbv6g-source
+Running phase: patchPhase
+@nix { "action": "setPhase", "phase": "patchPhase" }
+Running phase: buildPhase
+@nix { "action": "setPhase", "phase": "buildPhase" }
+===== TREE SNAPSHOT =====
+./.formatter.exs
+./.gitignore
+./LICENSE
+./README.md
+./azure-pipelines.yml
+./flake.lock
+./flake.nix
+./mix.exs
+./tests/aoc2025_test.exs
+./tests/test_helper.exs
+./tests/test_input/day01.txt
+./tests/test_input/day02.txt
+./tests/test_input/day03.txt
+./tests/test_input/day04.txt
+./tests/test_input/day05.txt
+./tests/test_input/day06.txt
+./tests/test_input/day07.txt
+./tests/test_input/day08.txt
+./tests/test_input/day09.txt
+./tests/test_input/day10.txt
+./tests/test_input/day11.txt
+./tests/test_input/day12.txt
+./tests/test_input/day13.txt
+./tests/test_input/day14.txt
+./tests/test_input/day15.txt
+./tests/test_input/day16.txt
+./tests/test_input/day17.txt
+./tests/test_input/day18.txt
+./tests/test_input/day19.txt
+./tests/test_input/day20.txt
+./tests/test_input/day21.txt
+./tests/test_input/day22.txt
+./tests/test_input/day23.txt
+./tests/test_input/day24.txt
+./tests/test_input/day25.txt
+--- lib/ ---
+--- tests/ ---
+tests/aoc2025_test.exs
+tests/test_helper.exs
+tests/test_input/day01.txt
+tests/test_input/day02.txt
+tests/test_input/day03.txt
+tests/test_input/day04.txt
+tests/test_input/day05.txt
+tests/test_input/day06.txt
+tests/test_input/day07.txt
+tests/test_input/day08.txt
+tests/test_input/day09.txt
+tests/test_input/day10.txt
+tests/test_input/day11.txt
+tests/test_input/day12.txt
+tests/test_input/day13.txt
+tests/test_input/day14.txt
+tests/test_input/day15.txt
+tests/test_input/day16.txt
+tests/test_input/day17.txt
+tests/test_input/day18.txt
+tests/test_input/day19.txt
+tests/test_input/day20.txt
+tests/test_input/day21.txt
+tests/test_input/day22.txt
+tests/test_input/day23.txt
+tests/test_input/day24.txt
+tests/test_input/day25.txt
+=========================
+Generated aoc2025 app
+[31m[1m** (Mix) Could not generate escript, module Elixir.Aoc2025.CLI defined as :main_module could not be loaded[0m
