@@ -88,19 +88,15 @@ packages.${system}.default = pkgs.stdenv.mkDerivation {
     export MIX_ENV=prod
     ${mixEnv}
 
-    # Clean & compile first (no deps/network assumed)
+    # 1) clean + compile once
     mix clean
     mix compile --no-deps-check --no-archives-check
 
-    # Ensure the CLI module is on the code path when escript.build runs
-    ERL_AFLAGS=""
-    while IFS= read -r -d "" ebin; do
-      ERL_AFLAGS="$ERL_AFLAGS -pa $ebin"
-    done < <(find _build/prod/lib -type d -name ebin -print0 || true)
-    export ERL_AFLAGS
+    # 2) expose compiled beams to the VM that runs escript.build
+    export ERL_LIBS="$PWD/_build/prod/lib"
 
-    # Build the escript
-    mix escript.build --no-deps-check --no-archives-check
+    # 3) build the escript WITHOUT compiling again (keeps the path)
+    mix escript.build --no-compile --no-deps-check --no-archives-check
   '';
 
   installPhase = ''
