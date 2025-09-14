@@ -95,6 +95,7 @@
         mix local.hex --force || true
         mix local.rebar --force || true
         mix deps.get || true
+        ${listTree}
       '';
     };
 
@@ -148,14 +149,9 @@
           ${listTree}
           export MIX_ENV=test
           ${mixEnv}
-          mix --version
-          elixir --version
-          mix local.hex --force
-          mix local.rebar --force
-          mix deps.get || true
-          echo "Compiling…"
-          mix compile --no-protocol-consolidation --no-deps-check
-          echo "Running tests…"
+
+          # Force a clean, single-pass test build:
+          mix clean
           mix test --color --slowest 10 --no-deps-check --trace
         '';
         installPhase = "mkdir -p $out && touch $out/done";

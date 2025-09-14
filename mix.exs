@@ -9,9 +9,13 @@ defmodule Aoc2025.MixProject do
       start_permanent: Mix.env() == :prod,
       escript: [main_module: Aoc2025.CLI],
       test_paths: ["tests"],
+      elixirc_paths: elixirc_paths(Mix.env()),
+      compilers: Mix.compilers(),
       deps: []
     ]
   end
+
+  defp elixirc_paths(_), do: ["lib"]
 
   def application do
     [
