@@ -20,7 +20,7 @@ jobs:
       - checkout: self
 
       - script: |
-          nix flake check
+          nix flake check --option sandbox false
         displayName: "Run nix flake check"
 
   - job: build
@@ -35,5 +35,5 @@ jobs:
       - checkout: self
 
       - script: |
-          nix build
+          nix build --option sandbox false
         displayName: "Build project"
