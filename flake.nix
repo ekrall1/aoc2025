@@ -13,7 +13,6 @@
       config.allowUnfree = true;
     };
 
-    # Use an Erlang that exists in this nixpkgs
     beam = pkgs.beam.packages.erlang_27;
     elixir = beam.elixir_1_17;
 
@@ -34,14 +33,8 @@
       }
     );
 
-    # Include working tree (tracked + untracked) for local iteration,
-    # and drop build artifacts so they don't pollute the derivation.
-    rawSrc = builtins.path { path = ./.; name = "aoc2025-src"; };
-    src = builtins.path { path = ./.; name = "aoc2025-src"; };
+    src = ./.;
 
-    # ---- CERT & MIX ENV FIX ----
-    # OTP 27's public_key tries OS certs; tell it exactly where.
-    # Hex also respects HEX_CACERTS_PATH. Many tools on Nix respect NIX_SSL_CERT_FILE.
     mixEnv = ''
       export LC_ALL=C.UTF-8
       export MIX_XDG=1
@@ -50,15 +43,13 @@
       export HEX_HOME="$TMPDIR/.hex"
       mkdir -p "$MIX_HOME/archives" "$HEX_HOME"
 
-      # CA locations (belt-and-suspenders for Erlang/Hex/httpc/curl-like tools)
       export NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
       export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
       export SSL_CERT_DIR=${pkgs.cacert}/etc/ssl/certs
       export HEX_CACERTS_PATH=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-      # ERL_SSL_PATH is sometimes consulted; keep it too
       export ERL_SSL_PATH=${pkgs.cacert}/etc/ssl/certs
-
       export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+
       export ELIXIR_ERL_OPTIONS="+fnu"
     '';
 
@@ -71,7 +62,6 @@
       (find tests -maxdepth 5 -type f | sort) 2>/dev/null || true
       echo "========================="
     '';
-
   in
   {
     devShells.${system}.default = pkgs.mkShell {
@@ -91,47 +81,10 @@
         echo "Entering Elixir dev shell (OTP: ${beam.erlang.version}, Elixir: ${elixir.version})"
         export MIX_ENV=dev
         ${mixEnv}
-        # harmless when no deps
         mix local.hex --force || true
         mix local.rebar --force || true
         mix deps.get || true
-        ${listTree}
       '';
-    };
-
-    packages.${system} = {
-      default = self.packages.${system}.aoc2025;
-
-      aoc2025 = pkgs.stdenv.mkDerivation {
-        pname = "aoc2025";
-        version = "0.0.1";
-        inherit src;
-
-        nativeBuildInputs = [
-          beam.erlang
-          elixir
-          beam.rebar3
-          pkgs.cacert
-        ];
-
-        buildPhase = ''
-          set -euo pipefail
-          ${listTree}
-          export MIX_ENV=prod
-          ${mixEnv}
-          mix local.hex --force
-          mix local.rebar --force
-          mix deps.get || true
-          mix compile --no-protocol-consolidation --no-deps-check
-        '';
-
-        installPhase = ''
-          mkdir -p $out/_build
-          cp -r _build/* $out/_build/ || true
-        '';
-
-        dontFixup = true;
-      };
     };
 
     checks.${system} = {
@@ -150,28 +103,11 @@
           export MIX_ENV=test
           ${mixEnv}
 
-          # Force a clean, single-pass test build:
           mix clean
-          mix test --color --slowest 10 --no-deps-check --trace
-        '';
-        installPhase = "mkdir -p $out && touch $out/done";
-      };
-
-      aoc2025-format = pkgs.stdenv.mkDerivation {
-        name = "mix-format-check";
-        inherit src;
-        nativeBuildInputs = [
-          beam.erlang
-          elixir
-          beam.rebar3
-          pkgs.cacert
-        ];
-        buildPhase = ''
-          set -euo pipefail
-          ${listTree}
-          export MIX_ENV=dev
-          ${mixEnv}
-          mix format --check-formatted "lib/**/*.{ex,exs}" "mix.exs"
+          # ✅ compile lib + support BEFORE tests are compiled
+          mix compile --no-deps-check
+          # ✅ run tests without recompiling anything
+          mix test --no-compile --no-deps-check --color --slowest 10 --trace
         '';
         installPhase = "mkdir -p $out && touch $out/done";
       };
