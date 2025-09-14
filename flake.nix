@@ -104,9 +104,18 @@
           ${mixEnv}
 
           mix clean
-          # ✅ compile lib + support BEFORE tests are compiled
           mix compile --no-deps-check
-          # ✅ run tests without recompiling anything
+
+          # Add compiled ebin paths to Erlang code path
+          for dir in _build/test/lib/*/ebin; do
+            if [ -z "$ERL_LIBS" ]; then
+              ERL_LIBS="$dir"
+            else
+              ERL_LIBS="$ERL_LIBS:$dir"
+            fi
+          done
+          export ERL_LIBS
+
           mix test --no-compile --no-deps-check --color --slowest 10 --trace
         '';
         installPhase = "mkdir -p $out && touch $out/done";
