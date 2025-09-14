@@ -10,3 +10,6 @@ erl_crash.dump
 .elixir_ls/
 input/**
 aoc2025
+
+# VSCode settings
+.vscode/

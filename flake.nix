@@ -49,6 +49,7 @@
           git
           elixir-ls
           vscode
+          bashInteractive
         ];
 
         shellHook = ''
@@ -80,7 +81,6 @@
             export MIX_ENV=prod
             mix local.hex --force
             mix local.rebar --force
-            mix deps.get --only prod
             mix compile
             mix escript.build
           '';
@@ -110,7 +110,6 @@
             export MIX_ENV=test
             mix local.hex --force
             mix local.rebar --force
-            mix deps.get --only test
             mix compile
             echo "running mix test"
             mix test --color --slowest 10
@@ -131,28 +130,7 @@
             export MIX_ENV=dev
             mix local.hex --force
             mix local.rebar --force
-            mix deps.get
             mix format --check-formatted
-          '';
-          installPhase = "mkdir -p $out && touch $out/done";
-        };
-
-        aoc2025-credo = pkgs.stdenv.mkDerivation {
-          name = "mix-credo-check";
-          src = ./.;
-          nativeBuildInputs = [
-            beam.erlang
-            elixir
-            beam.rebar3
-          ];
-          unpackPhase = "true";
-          buildPhase = ''
-            export MIX_ENV=dev
-            mix local.hex --force
-            mix local.rebar --force
-            mix deps.get
-            echo "running mix credo --strict"
-            mix credo --strict
           '';
           installPhase = "mkdir -p $out && touch $out/done";
         };
