@@ -88,6 +88,7 @@
 
     checks.${system} = {
       aoc2025-test = pkgs.stdenv.mkDerivation {
+        name = "aoc2025-test";
         pname = "aoc2025-test";
         inherit src;
 
