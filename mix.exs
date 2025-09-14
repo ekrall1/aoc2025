@@ -8,6 +8,7 @@ defmodule Aoc2025.MixProject do
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
       escript: [main_module: Aoc2025.CLI],
+      test_paths: ["tests"],
       deps: []
     ]
   end

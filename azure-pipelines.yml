@@ -1,0 +1,39 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - '*'
+
+jobs:
+  - job: format-and-test
+    displayName: "Run format and test checks"
+    pool:
+      name: Default
+    variables:
+      BASH_ENV: /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      NIX_CONFIG: extra-experimental-features = nix-command flakes
+    steps:
+      - checkout: self
+
+      - script: |
+          nix flake check
+        displayName: "Run nix flake check"
+
+  - job: build
+    displayName: "Build"
+    dependsOn: format-and-test
+    pool:
+      name: Default
+    variables:
+      BASH_ENV: /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      NIX_CONFIG: extra-experimental-features = nix-command flakes
+    steps:
+      - checkout: self
+
+      - script: |
+          nix build
+        displayName: "Build project"
