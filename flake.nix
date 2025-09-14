@@ -97,27 +97,27 @@
           beam.rebar3
           pkgs.cacert
         ];
-        buildPhase = ''
-          set -euo pipefail
-          ${listTree}
-          export MIX_ENV=test
-          ${mixEnv}
+buildPhase = ''
+  set -euo pipefail
+  ${listTree}
+  export MIX_ENV=test
+  ${mixEnv}
 
-          mix clean
-          mix compile --no-deps-check
+  # Clean + compile lib first (what worked locally)
+  mix clean
+  mix compile --no-deps-check
 
-          # Add compiled ebin paths to Erlang code path
-          for dir in _build/test/lib/*/ebin; do
-            if [ -z "$ERL_LIBS" ]; then
-              ERL_LIBS="$dir"
-            else
-              ERL_LIBS="$ERL_LIBS:$dir"
-            fi
-          done
-          export ERL_LIBS
+  # Add all compiled ebin dirs to the Erlang code path for the test run
+  ERL_AFLAGS=""
+  while IFS= read -r -d "" ebin; do
+    ERL_AFLAGS="$ERL_AFLAGS -pa $ebin"
+  done < <(find _build/test/lib -type d -name ebin -print0 || true)
+  export ERL_AFLAGS
 
-          mix test --no-compile --no-deps-check --color --slowest 10 --trace
-        '';
+  # Now run tests without recompiling (modules are already compiled & on path)
+  mix test --no-compile --no-deps-check --color --slowest 10 --trace
+'';
+
         installPhase = "mkdir -p $out && touch $out/done";
       };
     };
