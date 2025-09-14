@@ -87,39 +87,19 @@
       '';
     };
 
-    checks.${system} = {
-      aoc2025-test = pkgs.stdenv.mkDerivation {
-        name = "mix-test";
-        inherit src;
-        nativeBuildInputs = [
-          beam.erlang
-          elixir
-          beam.rebar3
-          pkgs.cacert
-        ];
-buildPhase = ''
-  set -euo pipefail
-  ${listTree}
-  export MIX_ENV=test
-  ${mixEnv}
+    checks.${system}.aoc2025-test = pkgs.beamPackages.mixRelease {
+      pname = "aoc2025";
+      src   = ./.;
+      mixEnv = "test";
 
-  # Clean + compile lib first (what worked locally)
-  mix clean
-  mix compile --no-deps-check
+      ERL_LIBS = "";      # <- ensure variable is defined
 
-  # Add all compiled ebin dirs to the Erlang code path for the test run
-  ERL_AFLAGS=""
-  while IFS= read -r -d "" ebin; do
-    ERL_AFLAGS="$ERL_AFLAGS -pa $ebin"
-  done < <(find _build/test/lib -type d -name ebin -print0 || true)
-  export ERL_AFLAGS
-
-  # Now run tests without recompiling (modules are already compiled & on path)
-  mix test --no-compile --no-deps-check --color --slowest 10 --trace
-'';
-
-        installPhase = "mkdir -p $out && touch $out/done";
-      };
+      checkPhase = ''
+        export ERL_LIBS=${ERL_LIBS}
+        mix test
+      '';
+      doCheck = true;
     };
+
   };
 }
