@@ -64,9 +64,14 @@
 
     listTree = ''
       echo "===== TREE SNAPSHOT ====="
-      (find . -maxdepth 2 -type f | sort) || true
+      (find . -maxdepth 3 -type f | sort) || true
+      echo "--- lib/ ---"
+      (find lib -maxdepth 5 -type f | sort) 2>/dev/null || true
+      echo "--- tests/ ---"
+      (find tests -maxdepth 5 -type f | sort) 2>/dev/null || true
       echo "========================="
     '';
+
   in
   {
     devShells.${system}.default = pkgs.mkShell {
