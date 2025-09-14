@@ -87,14 +87,13 @@
       '';
     };
 
-        checks.aoc2025-test = pkgs.stdenv.mkDerivation {
+        checks.${system}.aoc2025-test = pkgs.stdenv.mkDerivation {
           name = "aoc2025-test";
           src = ./.;
           buildInputs = [ pkgs.elixir ];
           ERL_LIBS = "";
-          buildPhase = "true";
+          #buildPhase = "true";
           checkPhase = ''
-            export ERL_LIBS=""
             mix test
           '';
           installPhase = "mkdir -p $out";
