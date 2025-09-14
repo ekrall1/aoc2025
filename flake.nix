@@ -94,7 +94,7 @@
           ERL_LIBS = "";
           buildPhase = "true";
           checkPhase = ''
-            export ERL_LIBS=${ERL_LIBS}
+            export ERL_LIBS=""
             mix test
           '';
           installPhase = "mkdir -p $out";
