@@ -9,7 +9,7 @@ pr:
       - '*'
 
 jobs:
-  - job: format-and-test
+  - job: format_and_test
     displayName: "Run format and test checks"
     pool:
       name: Default
@@ -25,7 +25,7 @@ jobs:
 
   - job: build
     displayName: "Build"
-    dependsOn: format-and-test
+    dependsOn: format_and_test
     pool:
       name: Default
     variables:
