@@ -22,7 +22,6 @@
           phoenixframework.phoenix
           eamodio.gitlens
           editorconfig.editorconfig
-          saoudrizwan.claude-dev
         ]) ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [ ];
       };
 
