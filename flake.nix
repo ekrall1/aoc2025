@@ -102,7 +102,7 @@
           set -euo pipefail
           mkdir -p "$out/bin"
           touch dummy
-          install -Dm755 ./dummy.txt "$out/bin/aoc2025"
+          install -Dm755 ./dummy "$out/bin/aoc2025"
       '';
     };
 
