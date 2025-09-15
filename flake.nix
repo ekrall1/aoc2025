@@ -73,7 +73,7 @@
       ];
       shellHook = ''
         echo "Entering Elixir dev shell (OTP: ${beam.erlang.version}, Elixir: ${elixir.version})"
-        export MIX_ENV=dev
+        export MIX_ENV=prod
         ${mixEnv}
       '';
     };
@@ -87,28 +87,22 @@
 
       buildPhase = ''
         set -euo pipefail
-        ${listTree}
-        export MIX_ENV=prod
-        ${mixEnv}
-
+        export ELIXIR_ERL_OPTIONS="+fnu"
+      
         # fail early if lib/ isn't in src
-        [ -d lib ] || { echo "FATAL: lib/ missing from Nix src"; ls -la; exit 1; }
+        #[ -d lib ] || { echo "FATAL: lib/ missing from Nix src"; ls -la; exit 1; }
 
         # 1) clean + compile once
         mix clean
         mix compile --no-deps-check --no-archives-check
-
-        # 2) ensure compiled beams are on the code path for escript build
-        export ERL_LIBS="$PWD/_build/prod/lib"
-
-        # 3) build escript without compiling again
-        mix escript.build --no-compile --no-deps-check --no-archives-check
       '';
 
       installPhase = ''
-        set -euo pipefail
-        mkdir -p $out/bin
-        install -Dm755 ./aoc2025 $out/bin/aoc2025
+        # TODO
+          set -euo pipefail
+          mkdir -p "$out/bin"
+          touch dummy
+          install -Dm755 ./dummy.txt "$out/bin/aoc2025"
       '';
     };
 
