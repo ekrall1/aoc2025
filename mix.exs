@@ -15,11 +15,11 @@ defmodule Aoc2025.MixProject do
     ]
   end
 
-  defp elixirc_paths(_), do: ["lib"]
+  # Compile lib/ for all envs; add tests/support during test
+  defp elixirc_paths(:test), do: ["lib", "tests/support"]
+  defp elixirc_paths(_),     do: ["lib"]
 
   def application do
-    [
-      extra_applications: [:logger]
-    ]
+    [extra_applications: [:logger]]
   end
 end

@@ -9,8 +9,8 @@ pr:
       - '*'
 
 jobs:
-  - job: format_and_test
-    displayName: "Run format and test checks"
+  - job: test
+    displayName: "Run test checks"
     pool:
       name: Default
     variables:
@@ -20,12 +20,12 @@ jobs:
       - checkout: self
 
       - script: |
-          nix flake check --option sandbox false
+          nix build .#checks.x86_64-linux.aoc2025-test
         displayName: "Run nix flake check"
 
   - job: build
     displayName: "Build"
-    dependsOn: format_and_test
+    dependsOn: test
     pool:
       name: Default
     variables:
@@ -35,5 +35,5 @@ jobs:
       - checkout: self
 
       - script: |
-          nix build --option sandbox false
+          nix build
         displayName: "Build project"

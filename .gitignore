@@ -9,8 +9,8 @@ erl_crash.dump
 /config/*.secret.exs
 .elixir_ls/
 input/**
-aoc2025
 result
+/aoc2025
 
 # VSCode settings
 .vscode/
