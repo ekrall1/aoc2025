@@ -26,45 +26,11 @@
         ]) ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [ ];
       };
 
-      # ----------- IMPORTANT: include working tree (tracked + untracked) in src -----------
-      rawSrc = builtins.path {
-        path = ./.;
-        name = "aoc2025-src";
-      };
       src = builtins.path {
         path = ./.;
         name = "aoc2025-src";
       };
 
-      # Common env for mix tasks in derivations
-      mixEnv = ''
-        export LC_ALL=C.UTF-8
-        export HOME="$TMPDIR"
-        export MIX_XDG=1
-        export MIX_HOME="$TMPDIR/.mix"
-        export HEX_HOME="$TMPDIR/.hex"
-        mkdir -p "$MIX_HOME/archives" "$HEX_HOME"
-
-        export NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-        export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-        export SSL_CERT_DIR=${pkgs.cacert}/etc/ssl/certs
-        export HEX_CACERTS_PATH=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-        export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-        export ERL_SSL_PATH=${pkgs.cacert}/etc/ssl/certs
-
-        # avoid OTP name-encoding warning
-        export ELIXIR_ERL_OPTIONS="+fnu"
-      '';
-
-      listTree = ''
-        echo "===== TREE SNAPSHOT ====="
-        (find . -maxdepth 3 -type f | sort) || true
-        echo "--- lib/ ---"
-        (find lib -maxdepth 5 -type f | sort) 2>/dev/null || true
-        echo "--- tests/ ---"
-        (find tests -maxdepth 5 -type f | sort) 2>/dev/null || true
-        echo "========================="
-      '';
     in {
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
@@ -81,11 +47,10 @@
         shellHook = ''
           echo "Entering Elixir dev shell (OTP: ${beam.erlang.version}, Elixir: ${elixir.version})"
           export MIX_ENV=prod
-          ${mixEnv}
         '';
       };
 
-      # -------------------- DEFAULT PACKAGE: builds escript -> $out/bin/aoc2025 --------------------
+      # -------------------- DEFAULT PACKAGE --------------------
       packages.${system}.default = pkgs.stdenv.mkDerivation {
         name = "aoc2025";
         inherit src;
@@ -120,17 +85,8 @@
         checkPhase = ''
           set -euo pipefail
           export LC_ALL=C.UTF-8 LANG=C.UTF-8 MIX_ENV=test
-          ${mixEnv}
 
           # compile once so doctests can load modules
-          mix compile --no-deps-check --no-archives-check
-
-          # ensure compiled EBINs are on BEAM path during doctest expansion
-          ERL_AFLAGS=""
-          while IFS= read -r -d "" ebin; do
-            ERL_AFLAGS="$ERL_AFLAGS -pa $ebin"
-          done < <(find _build/test/lib -type d -name ebin -print0 || true)
-          export ERL_AFLAGS
 
           mix test --no-compile --no-deps-check --no-archives-check
         '';
