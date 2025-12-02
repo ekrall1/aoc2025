@@ -5,6 +5,22 @@ defmodule Aoc2025.Days.Day01 do
 
   @behaviour Aoc2025.Day
 
+  @start_position 50
+  @num_positions 100
+
+  @typedoc "Direction of movement"
+  @type direction :: :left | :right
+
+  @typedoc "A movement - direction and spaces"
+  @type move :: {direction(), non_neg_integer()}
+
+  @typedoc "Position on the dial"
+  @type position :: non_neg_integer()
+
+  @typedoc "Dial size"
+  @type dial_size :: non_neg_integer()
+
+
   @spec part1(String.t()) :: String.t()
   @doc """
   Solves part 1 of day 1.
@@ -18,7 +34,7 @@ defmodule Aoc2025.Days.Day01 do
   @impl Aoc2025.Day
   def part1(input) do
     lst = parse_input(input)
-    {_, zeros} = p1_reduce(lst, 50, 100)
+    {_, zeros} = p1_reduce(lst, @start_position, @num_positions)
 
     Integer.to_string(zeros)
   end
@@ -36,7 +52,7 @@ defmodule Aoc2025.Days.Day01 do
   @impl Aoc2025.Day
   def part2(input) do
     lst = parse_input(input)
-    {_, zeros} = p2_reduce(lst, 50, 100)
+    {_, zeros} = p2_reduce(lst, @start_position, @num_positions)
 
     Integer.to_string(zeros)
   end
@@ -45,25 +61,33 @@ defmodule Aoc2025.Days.Day01 do
     input
     |> String.split("\n", trim: true)
     |> Enum.map(fn <<hd::binary-size(1), rest::binary>> ->
-      {hd, String.to_integer(rest)}
+      dir = case hd do
+        "R" -> :right
+        _ -> :left
+      end
+      {dir, String.to_integer(rest)}
     end)
   end
 
   defp p1_reduce(lst, start, nums) do
     Enum.reduce(lst, {start, 0}, fn {dir, spaces}, {position, zeros} ->
-      position =
-        if dir == "R",
-          do: Integer.mod(position + spaces, nums),
-          else: Integer.mod(position - spaces, nums)
+      new_pos =
+        case dir do
+          :right -> Integer.mod(position + spaces, nums)
+          :left -> Integer.mod(position - spaces, nums)
+        end
 
-      zeros = if position == 0, do: zeros + 1, else: zeros
-      {position, zeros}
+      new_zeros = if new_pos == 0, do: zeros + 1, else: zeros
+      {new_pos, new_zeros}
     end)
   end
 
   defp p2_reduce(lst, start, nums) do
     Enum.reduce(lst, {start, 0}, fn {dir, spaces}, {position, zeros} ->
-      move = if dir == "R", do: spaces, else: -spaces
+      move = case dir do
+        :right -> spaces
+        :left -> -spaces
+      end
 
       crossings = get_p2_crossings(position, move, nums)
 
