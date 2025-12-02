@@ -24,6 +24,10 @@ defmodule Aoc2025.Days.Day01 do
 
   @spec part2(any()) :: <<_::256>>
   @doc """
+  Solves part 2 of day 1.
+
+  ## Examples
+
      iex> input = File.read!("tests/test_input/day01.txt")
      iex> Aoc2025.Days.Day01.part2(input)
      "6"
