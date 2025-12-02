@@ -17,7 +17,7 @@ defmodule Aoc2025.MixProject do
 
   # Compile lib/ for all envs; add tests/support during test
   defp elixirc_paths(:test), do: ["lib", "tests/support"]
-  defp elixirc_paths(_),     do: ["lib"]
+  defp elixirc_paths(_), do: ["lib"]
 
   def application do
     [extra_applications: [:logger]]

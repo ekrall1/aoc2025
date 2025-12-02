@@ -18,15 +18,16 @@ defmodule Aoc2025.CLI do
   Parse command line arguments and return a command struct.
   """
   def parse_args(args) do
-    {options, _, _} = OptionParser.parse(args,
-      strict: [
-        day: :integer,
-        part: :integer,
-        inputfile: :string,
-        help: :boolean
-      ],
-      aliases: [h: :help]
-    )
+    {options, _, _} =
+      OptionParser.parse(args,
+        strict: [
+          day: :integer,
+          part: :integer,
+          inputfile: :string,
+          help: :boolean
+        ],
+        aliases: [h: :help]
+      )
 
     case options do
       [help: true] -> {:help}
@@ -37,11 +38,13 @@ defmodule Aoc2025.CLI do
   defp build_solve_command(options) do
     case validate_args(options) do
       {:ok, validated_args} ->
-        {:solve, %SolveCommand{
-          day: Keyword.get(validated_args, :day),
-          part: Keyword.get(validated_args, :part),
-          inputfile: Keyword.get(validated_args, :inputfile)
-        }}
+        {:solve,
+         %SolveCommand{
+           day: Keyword.get(validated_args, :day),
+           part: Keyword.get(validated_args, :part),
+           inputfile: Keyword.get(validated_args, :inputfile)
+         }}
+
       {:error, message} ->
         {:error, message}
     end
@@ -61,18 +64,23 @@ defmodule Aoc2025.CLI do
   end
 
   defp validate_day(nil), do: {:error, "Day is required"}
+
   defp validate_day(day) when day < 1 or day > 25 do
     {:error, "Day must be between 1 and 25, got: #{day}"}
   end
+
   defp validate_day(day), do: {:ok, day}
 
   defp validate_part(nil), do: {:error, "Part is required"}
+
   defp validate_part(part) when part not in [1, 2] do
     {:error, "Part must be 1 or 2, got: #{part}"}
   end
+
   defp validate_part(part), do: {:ok, part}
 
   defp validate_inputfile(nil), do: {:error, "Input file is required"}
+
   defp validate_inputfile(filepath) do
     case File.exists?(filepath) do
       true -> {:ok, filepath}

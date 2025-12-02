@@ -8,10 +8,10 @@ defmodule Aoc2025.Commands.SolveCommand do
   defstruct [:day, :part, :inputfile]
 
   @type t :: %__MODULE__{
-    day: integer(),
-    part: integer(),
-    inputfile: String.t()
-  }
+          day: integer(),
+          part: integer(),
+          inputfile: String.t()
+        }
 
   @doc """
   Execute the solve command.
@@ -74,6 +74,7 @@ defmodule Aoc2025.Commands.SolveCommand do
     rescue
       UndefinedFunctionError ->
         {:error, "Day #{day} exists but part #{part} not implemented"}
+
       error ->
         {:error, "Error running Day #{day} Part #{part}: #{inspect(error)}"}
     end
