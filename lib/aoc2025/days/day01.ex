@@ -17,6 +17,12 @@ defmodule Aoc2025.Days.Day01 do
   @typedoc "Position on the dial"
   @type position :: non_neg_integer()
 
+  @typedoc "count of zeros"
+  @type zeros_count :: non_neg_integer()
+
+  @typedoc "size of the combination wheel"
+  @type dial_size :: non_neg_integer()
+
   @spec part1(String.t()) :: String.t()
   @doc """
   Solves part 1 of day 1.
@@ -53,6 +59,7 @@ defmodule Aoc2025.Days.Day01 do
     Integer.to_string(zeros)
   end
 
+  @spec parse_input(String.t()) :: [move()]
   defp parse_input(input) do
     input
     |> String.split("\n", trim: true)
@@ -67,6 +74,7 @@ defmodule Aoc2025.Days.Day01 do
     end)
   end
 
+  @spec p1_reduce([move()], position(), dial_size()) :: {position(), zeros_count()}
   defp p1_reduce(lst, start, nums) do
     Enum.reduce(lst, {start, 0}, fn {dir, spaces}, {position, zeros} ->
       new_pos =
@@ -80,6 +88,7 @@ defmodule Aoc2025.Days.Day01 do
     end)
   end
 
+  @spec p2_reduce([move()], position(), dial_size()) :: {position(), zeros_count()}
   defp p2_reduce(lst, start, nums) do
     Enum.reduce(lst, {start, 0}, fn {dir, spaces}, {position, zeros} ->
       move =
@@ -95,6 +104,7 @@ defmodule Aoc2025.Days.Day01 do
     end)
   end
 
+  @spec get_p2_crossings(position(), integer(), dial_size()) :: zeros_count()
   defp get_p2_crossings(position, move, nums) do
     cond do
       move > 0 ->
