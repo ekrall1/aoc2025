@@ -5,6 +5,7 @@ defmodule Aoc2025.Days.Day01 do
 
   @behaviour Aoc2025.Day
 
+  @spec part1(String.t()) :: String.t()
   @doc """
   Solves part 1 of day 1.
 
@@ -22,7 +23,7 @@ defmodule Aoc2025.Days.Day01 do
     Integer.to_string(zeros)
   end
 
-  @spec part2(any()) :: <<_::256>>
+  @spec part2(String.t()) :: String.t()
   @doc """
   Solves part 2 of day 1.
 
