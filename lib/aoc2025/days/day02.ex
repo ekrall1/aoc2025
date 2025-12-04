@@ -56,16 +56,19 @@ defmodule Aoc2025.Days.Day02 do
 
   ## Examples
 
-      iex> test_input = File.read!("tests/test_input/day02.txt")
-      iex> Aoc2025.Days.Day02.part2(test_input)
-      "Day 02 Part 2 not implemented yet"
+      iex> input = File.read!("tests/test_input/day02.txt")
+      iex> Aoc2025.Days.Day02.part2(input)
+      "4174379265"
 
   """
   @impl Aoc2025.Day
-  def part2(_input) do
-    # TODO: Implement Day 02 Part 2
-    # input is the raw file content as a string
-    "Day 02 Part 2 not implemented yet"
+  def part2(input) do
+    parse_input(input)
+    |> collect_invalid_p2()
+    |> Enum.reduce(0, fn {key, _}, acc ->
+      acc + key
+    end)
+    |> Integer.to_string()
   end
 
   @spec parse_input(String.t()) :: [id_range()]
@@ -104,5 +107,26 @@ defmodule Aoc2025.Days.Day02 do
         end
       end)
     end)
+  end
+
+  @spec collect_invalid_p2([id_range()]) :: invalid_hm()
+  defp collect_invalid_p2(input) do
+    Enum.reduce(input, %{}, fn {start_id, end_id}, invalid_ids_hm ->
+      Enum.reduce(start_id..end_id, invalid_ids_hm, fn idx, acc ->
+        sidx = Integer.to_string(idx)
+        shifted = get_shifted(sidx)
+        if String.contains?(shifted, sidx) do
+          Map.update(acc, idx, 1, &(&1 + 1))
+        else
+          acc
+        end
+      end)
+    end)
+  end
+
+  @spec get_shifted(String.t()) :: String.t()
+  defp get_shifted(sidx) do
+    expanded = sidx <> sidx
+    String.slice(expanded, 1, String.length(expanded) - 2)
   end
 end
