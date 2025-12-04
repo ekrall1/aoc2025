@@ -5,9 +5,6 @@ defmodule Aoc2025.Days.Day02 do
 
   @behaviour Aoc2025.Day
 
-  @typedoc "total invalid ids"
-  @type total :: non_neg_integer()
-
   @typedoc "single invalid Id count"
   @type id_count :: non_neg_integer()
 
@@ -25,9 +22,6 @@ defmodule Aoc2025.Days.Day02 do
 
   @typedoc "id range"
   @type id_range :: {id_start(), id_end()}
-
-  @typedoc "valid id cache"
-  @type valid_cache :: MapSet.t(non_neg_integer())
 
   @spec part1(String.t()) :: String.t()
   @doc """
@@ -50,7 +44,7 @@ defmodule Aoc2025.Days.Day02 do
     |> Integer.to_string()
   end
 
-  @spec part2(any()) :: <<_::264>>
+ @spec part2(String.t()) :: String.t()
   @doc """
   Solves part 2 of day 02.
 
