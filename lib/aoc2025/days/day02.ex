@@ -82,12 +82,14 @@ defmodule Aoc2025.Days.Day02 do
   defp is_invalid(idx) do
     sidx = Integer.to_string(idx)
     len = String.length(sidx)
+
     case Integer.mod(len, 2) do
-      0 -> (
+      0 ->
         mid = div(len, 2)
         String.slice(sidx, 0, mid) == String.slice(sidx, mid, mid)
-      )
-      _ -> false
+
+      _ ->
+        false
     end
   end
 
@@ -103,5 +105,4 @@ defmodule Aoc2025.Days.Day02 do
       end)
     end)
   end
-
 end
