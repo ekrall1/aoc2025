@@ -26,6 +26,8 @@ defmodule Aoc2025.Days.Day03 do
   @typedoc "remaining row max index"
   @type rem_max_idx :: non_neg_integer()
 
+  @max_digits 12
+
   @spec part1(String.t()) :: String.t()
   @doc """
   Solves part 1 of day 03.
@@ -49,6 +51,7 @@ defmodule Aoc2025.Days.Day03 do
     Integer.to_string(sumrows)
   end
 
+  @spec part2(String.t()) :: String.t()
   @doc """
   Solves part 2 of day 03.
 
@@ -56,14 +59,19 @@ defmodule Aoc2025.Days.Day03 do
 
       iex> test_input = File.read!("tests/test_input/day03.txt")
       iex> Aoc2025.Days.Day03.part2(test_input)
-      "Day 03 Part 2 not implemented yet"
+      "3121910778619"
 
   """
   @impl Aoc2025.Day
-  def part2(_input) do
-    # TODO: Implement Day 03 Part 2
-    # input is the raw file content as a string
-    "Day 03 Part 2 not implemented yet"
+  def part2(input) do
+    rows = parse_input(input)
+
+    sumrows =
+      Enum.reduce(rows, 0, fn row, max_num ->
+        max_num + process_row_p2(row)
+      end)
+
+    Integer.to_string(sumrows)
   end
 
   @spec parse_input(String.t()) :: [row()]
@@ -84,6 +92,50 @@ defmodule Aoc2025.Days.Day03 do
         snd_digit_idx = get_rem_max_idx(row_slice) + idx2
         update_max(row, idx1, snd_digit_idx, max_num2)
       end)
+    end)
+  end
+
+  @spec process_row_p2(row()) :: overall_max()
+  defp process_row_p2(row) do
+    row
+    |> parse_digits()
+    |> build_max_number()
+    |> Enum.reverse()
+    |> Enum.map(&Integer.to_string/1)
+    |> Enum.join("")
+    |> String.to_integer()
+  end
+
+  @spec parse_digits(row()) :: [non_neg_integer()]
+  defp parse_digits(row) do
+    row
+    |> String.graphemes()
+    |> Enum.map(&String.to_integer/1)
+  end
+
+  @spec build_max_number([non_neg_integer()]) :: [non_neg_integer()]
+  defp build_max_number(digits) do
+    {final_digits, remaining} =
+      Enum.reduce(digits, {[], length(digits) - @max_digits}, fn digit, {lst, rem} ->
+        {x, y} = pop_stack(lst, rem, digit)
+        {[digit | x], y}
+      end)
+
+    case remaining > 0 do
+      true -> Enum.drop(final_digits, remaining)
+      false -> final_digits
+    end
+  end
+
+  @spec pop_stack([non_neg_integer()], non_neg_integer(), non_neg_integer()) ::
+          {[non_neg_integer()], non_neg_integer()}
+  defp pop_stack(lst, rem, digit) do
+    0..(rem - 1)
+    |> Enum.reduce_while({lst, rem}, fn _, {st, k} ->
+      case st do
+        [hd | tl] when k > 0 and hd < digit -> {:cont, {tl, k - 1}}
+        _ -> {:halt, {st, k}}
+      end
     end)
   end
 
