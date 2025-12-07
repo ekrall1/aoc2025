@@ -44,7 +44,7 @@ defmodule Aoc2025.Days.Day02 do
     |> Integer.to_string()
   end
 
- @spec part2(String.t()) :: String.t()
+  @spec part2(String.t()) :: String.t()
   @doc """
   Solves part 2 of day 02.
 
@@ -109,6 +109,7 @@ defmodule Aoc2025.Days.Day02 do
       Enum.reduce(start_id..end_id, invalid_ids_hm, fn idx, acc ->
         sidx = Integer.to_string(idx)
         shifted = get_shifted(sidx)
+
         if String.contains?(shifted, sidx) do
           Map.update(acc, idx, 1, &(&1 + 1))
         else
