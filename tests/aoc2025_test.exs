@@ -14,17 +14,4 @@ defmodule Aoc2025Test do
   doctest Aoc2025.Days.Day10
   doctest Aoc2025.Days.Day11
   doctest Aoc2025.Days.Day12
-  doctest Aoc2025.Days.Day13
-  doctest Aoc2025.Days.Day14
-  doctest Aoc2025.Days.Day15
-  doctest Aoc2025.Days.Day16
-  doctest Aoc2025.Days.Day17
-  doctest Aoc2025.Days.Day18
-  doctest Aoc2025.Days.Day19
-  doctest Aoc2025.Days.Day20
-  doctest Aoc2025.Days.Day21
-  doctest Aoc2025.Days.Day22
-  doctest Aoc2025.Days.Day23
-  doctest Aoc2025.Days.Day24
-  doctest Aoc2025.Days.Day25
 end
