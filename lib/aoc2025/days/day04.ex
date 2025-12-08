@@ -24,7 +24,7 @@ defmodule Aoc2025.Days.Day04 do
     goal = fn {r, c} -> r == grid.rows - 1 and c == grid.cols - 1 end
 
     neighbors = fn {r, c} ->
-      for {dr, dc} <- [{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}],
+      for {dr, dc} <- [{1, 0}, {-1, 0}, {0, 1}, {0, -1}],
           nr = r + dr,
           nc = c + dc,
           nr >= 0 and nr < grid.rows and nc >= 0 and nc < grid.cols,
@@ -33,14 +33,14 @@ defmodule Aoc2025.Days.Day04 do
 
     visit_fn = fn {r, c}, acc ->
       if is_at(grid, r, c) and neighbor_at_count(grid, r, c) < 4 do
-        acc + 1
+        [{r, c} | acc]
       else
         acc
       end
     end
 
     {_, _, ans} = bfs({0, 0}, goal, neighbors, visit_fn)
-    Integer.to_string(ans)
+    Integer.to_string(length(ans))
   end
 
   defp parse_grid(input) do
@@ -50,6 +50,17 @@ defmodule Aoc2025.Days.Day04 do
       |> Enum.map(&String.graphemes/1)
 
     %{grid: grid, rows: length(grid), cols: length(hd(grid))}
+  end
+
+  defp update_grid(grid, removed) do
+    new_grid =
+      Enum.reduce(removed, grid.grid, fn {r, c}, g ->
+        List.update_at(g, r, fn row ->
+          List.update_at(row, c, fn _ -> "." end)
+        end)
+      end)
+
+    %{grid | grid: new_grid}
   end
 
   defp get_cell(grid, r, c) do
@@ -72,7 +83,7 @@ defmodule Aoc2025.Days.Day04 do
   defp bfs(start, goal?, neighbors, visit_fn) do
     queue = :queue.from_list([start])
     visited = MapSet.new([start])
-    do_bfs(queue, visited, goal?, neighbors, visit_fn, 0)
+    do_bfs(queue, visited, goal?, neighbors, visit_fn, [])
   end
 
   defp do_bfs(queue, visited, goal?, neighbors, visit_fn, acc) do
@@ -114,13 +125,51 @@ defmodule Aoc2025.Days.Day04 do
 
       iex> test_input = File.read!("tests/test_input/day04.txt")
       iex> Aoc2025.Days.Day04.part2(test_input)
-      "Day 04 Part 2 not implemented yet"
+      "43"
 
   """
   @impl Aoc2025.Day
-  def part2(_input) do
-    # TODO: Implement Day 04 Part 2
-    # input is the raw file content as a string
-    "Day 04 Part 2 not implemented yet"
+  def part2(input) do
+    grid = parse_grid(input)
+
+    {_, ans} = recurse(grid, [])
+
+    Integer.to_string(length(ans))
+  end
+
+  defp recurse(grid, removed) do
+    {grid2, new_removed} = part2_helper(grid, removed)
+
+    case new_removed do
+      [] ->
+        {grid2, removed}
+
+      _ ->
+        recurse(grid2, removed ++ new_removed)
+    end
+  end
+
+  defp part2_helper(grid, removed) do
+    grid = update_grid(grid, removed)
+    goal = fn {r, c} -> r == grid.rows - 1 and c == grid.cols - 1 end
+
+    neighbors = fn {r, c} ->
+      for {dr, dc} <- [{1, 0}, {-1, 0}, {0, 1}, {0, -1}],
+          nr = r + dr,
+          nc = c + dc,
+          nr >= 0 and nr < grid.rows and nc >= 0 and nc < grid.cols,
+          do: {nr, nc}
+    end
+
+    visit_fn = fn {r, c}, acc ->
+      if is_at(grid, r, c) and neighbor_at_count(grid, r, c) < 4 do
+        [{r, c} | acc]
+      else
+        acc
+      end
+    end
+
+    {_, _, ans} = bfs({0, 0}, goal, neighbors, visit_fn)
+    {grid, ans}
   end
 end
