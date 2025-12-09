@@ -5,6 +5,7 @@ defmodule Aoc2025.Days.Day05 do
 
   @behaviour Aoc2025.Day
 
+  @spec part1(String.t()) :: String.t()
   @doc """
   Solves part 1 of day 05.
 
@@ -22,6 +23,7 @@ defmodule Aoc2025.Days.Day05 do
     "Day 05 Part 1 not implemented yet"
   end
 
+  @spec part2(String.t()) :: String.t()
   @doc """
   Solves part 2 of day 05.
 
