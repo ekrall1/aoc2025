@@ -174,6 +174,7 @@ defmodule Aoc2025.Days.Day04 do
     end)
   end
 
+  @spec recurse(grid_obj(), [bfs_node()]) :: {grid_obj(), [bfs_node()]}
   defp recurse(grid, removed) do
     {grid2, new_removed} = part2_helper(grid, removed)
 
@@ -186,7 +187,8 @@ defmodule Aoc2025.Days.Day04 do
     end
   end
 
-  @spec recurse(grid_obj(), [bfs_node()]) :: {grid_obj(), [bfs_node()]}
+  @spec part2_helper(grid_obj(), [bfs_node()]) ::
+          {grid_obj(), [bfs_node()]}
   defp part2_helper(grid, removed) do
     grid = update_grid(grid, removed)
     goal = fn {r, c} -> r == grid.rows - 1 and c == grid.cols - 1 end
