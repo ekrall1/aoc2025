@@ -35,6 +35,28 @@ defmodule Aoc2025.Days.Day05 do
     |> Integer.to_string()
   end
 
+  @spec part2(String.t()) :: String.t()
+  @doc """
+  Solves part 2 of day 05.
+
+  ## Examples
+
+      iex> test_input = File.read!("tests/test_input/day05.txt")
+      iex> Aoc2025.Days.Day05.part2(test_input)
+      "14"
+
+  """
+  @impl Aoc2025.Day
+  def part2(input) do
+    input_obj =
+      input
+      |> parse_input
+
+    merge_ranges(input_obj.ranges)
+    |> Enum.reduce(0, fn {x, y}, acc -> acc + y - x + 1 end)
+    |> Integer.to_string()
+  end
+
   @spec parse_input(String.t()) :: input_obj()
   defp parse_input(input) do
     parts = input |> String.split("\n\n")
@@ -67,28 +89,22 @@ defmodule Aoc2025.Days.Day05 do
     end
   end
 
-  @spec part2(String.t()) :: String.t()
-  @doc """
-  Solves part 2 of day 05.
+  @spec merge_ranges(ingredient_ranges()) :: ingredient_ranges()
+  defp merge_ranges(ranges) do
+    ranges
+    |> Enum.sort_by(&elem(&1, 0))
+    |> Enum.reduce([], fn {s, e}, acc ->
+      case acc do
+        [] ->
+          [{s, e}]
 
-  ## Examples
-
-      iex> test_input = File.read!("tests/test_input/day05.txt")
-      iex> Aoc2025.Days.Day05.part2(test_input)
-      "Day 05 Part 2 not implemented yet"
-
-  """
-  @impl Aoc2025.Day
-  def part2(_input) do
-    # TODO: Implement Day 05 Part 2
-    # input is the raw file content as a string
-    "Day 05 Part 2 not implemented yet"
+        [{cur_s, cur_e} | rest] ->
+          if s <= cur_e + 1 do
+            [{cur_s, max(cur_e, e)} | rest]
+          else
+            [{s, e} | acc]
+          end
+      end
+    end)
   end
-
-  # Helper functions can go here
-  # defp parse_input(input) do
-  #   input
-  #   |> String.trim()
-  #   |> String.split("\n")
-  # end
 end
