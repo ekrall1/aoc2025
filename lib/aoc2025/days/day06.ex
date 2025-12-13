@@ -24,6 +24,7 @@ defmodule Aoc2025.Days.Day06 do
     |> Enum.reduce(0, fn group, acc ->
       acc + get_accumulator(group)
     end)
+    |> Integer.to_string()
   end
 
   @spec part2(String.t()) :: String.t()
