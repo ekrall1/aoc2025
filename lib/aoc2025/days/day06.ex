@@ -7,6 +7,8 @@ defmodule Aoc2025.Days.Day06 do
 
   @type input_obj :: [[String.t()]]
 
+  @type part2_input_obj :: {[[String.t()]], [String.t()]}
+
   @spec part1(String.t()) :: String.t()
   @doc """
   Solves part 1 of day 06.
@@ -35,14 +37,18 @@ defmodule Aoc2025.Days.Day06 do
 
       iex> test_input = File.read!("tests/test_input/day06.txt")
       iex> Aoc2025.Days.Day06.part2(test_input)
-      "Day 06 Part 2 not implemented yet"
+      "3263827"
 
   """
   @impl Aoc2025.Day
-  def part2(_input) do
-    # TODO: Implement Day 06 Part 2
-    # input is the raw file content as a string
-    "Day 06 Part 2 not implemented yet"
+  def part2(input) do
+    {nums, ops} = parse_input2(input)
+
+    Enum.zip(nums, ops)
+    |> Enum.reduce(0, fn {group, op}, acc ->
+      acc + get_accumulator2(group, op)
+    end)
+    |> Integer.to_string()
   end
 
   @spec parse_input(String.t()) :: input_obj()
@@ -57,6 +63,32 @@ defmodule Aoc2025.Days.Day06 do
     transpose
   end
 
+  @spec parse_input2(String.t()) :: part2_input_obj()
+  defp parse_input2(input) do
+    instructions =
+      input
+      |> String.split("\n", trim: true)
+      |> Enum.map(&String.graphemes/1)
+      |> Enum.reverse()
+
+    nums =
+      instructions
+      |> tl()
+      |> Enum.reverse()
+      |> Enum.zip()
+      |> Enum.map(fn group -> group |> Tuple.to_list() |> List.to_string() |> String.trim() end)
+      |> Enum.join(",")
+      |> String.split(",,")
+      |> Enum.map(fn group -> group |> String.split(",") end)
+
+    ops =
+      instructions
+      |> hd()
+      |> Enum.reject(&String.match?(&1, ~r/\s/))
+
+    {nums, ops}
+  end
+
   @spec get_accumulator([String.t()]) :: non_neg_integer()
   defp get_accumulator(group) do
     [hd | tl] = Enum.reverse(group)
@@ -64,6 +96,14 @@ defmodule Aoc2025.Days.Day06 do
     case hd do
       "*" -> get_prod(tl)
       _ -> get_sum(tl)
+    end
+  end
+
+  @spec get_accumulator2([String.t()], String.t()) :: non_neg_integer()
+  defp get_accumulator2(group, op) do
+    case op do
+      "*" -> get_prod(group)
+      _ -> get_sum(group)
     end
   end
 
