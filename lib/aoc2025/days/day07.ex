@@ -36,8 +36,6 @@ defmodule Aoc2025.Days.Day07 do
   def part1(input) do
     grid = Aoc2025.Util.parse_grid(input)
 
-    goal = fn {r, _c} -> r == -1 end
-
     neighbors = fn {r, c} ->
       if r + 1 >= grid.rows do
         []
@@ -66,7 +64,7 @@ defmodule Aoc2025.Days.Day07 do
 
     start = get_start(grid)
 
-    {_, _, splits} = bfs(start, goal, neighbors, visit_fn)
+    {_, _, splits} = bfs(start, neighbors, visit_fn)
     set = MapSet.new(splits)
     Integer.to_string(MapSet.size(set))
   end
@@ -91,24 +89,22 @@ defmodule Aoc2025.Days.Day07 do
 
   @spec bfs(
           bfs_node(),
-          (bfs_node() -> boolean()),
           (bfs_node() -> [bfs_node()]),
           visit_fn()
         ) ::
           {:no_path, [bfs_node()], [bfs_node()]}
           | {:found, bfs_node(), [bfs_node()], [bfs_node()]}
-  defp bfs(start, goal?, neighbors, visit_fn) do
+  defp bfs(start, neighbors, visit_fn) do
     queue = :queue.from_list([start])
     visited = MapSet.new([start])
     splits = []
-    do_bfs(queue, visited, splits, goal?, neighbors, visit_fn, [])
+    do_bfs(queue, visited, splits, neighbors, visit_fn, [])
   end
 
   @spec do_bfs(
           :queue.queue(bfs_node()),
           MapSet.t(bfs_node()),
           [bfs_node()],
-          (bfs_node() -> boolean()),
           (bfs_node() -> [bfs_node()]),
           visit_fn(),
           list(bfs_node())
@@ -116,7 +112,7 @@ defmodule Aoc2025.Days.Day07 do
           {:no_path, list(bfs_node()), list(bfs_node())}
           | {:found, bfs_node(), list(bfs_node()), list(bfs_node())}
 
-  defp do_bfs(queue, visited, splits, goal?, neighbors, visit_fn, acc) do
+  defp do_bfs(queue, visited, splits, neighbors, visit_fn, acc) do
     case :queue.out(queue) do
       {:empty, _} ->
         {:no_path, acc, splits}
@@ -124,14 +120,8 @@ defmodule Aoc2025.Days.Day07 do
       {{:value, node}, queue_rest} ->
         {acc2, splits2} = visit_fn.(node, acc, splits)
 
-        cond do
-          goal?.(node) ->
-            {:found, node, acc2, splits2}
-
-          true ->
-            {queue2, visited2} = enqueue_neighbors(node, queue_rest, visited, neighbors)
-            do_bfs(queue2, visited2, splits2, goal?, neighbors, visit_fn, acc2)
-        end
+        {queue2, visited2} = enqueue_neighbors(node, queue_rest, visited, neighbors)
+        do_bfs(queue2, visited2, splits2, neighbors, visit_fn, acc2)
     end
   end
 
