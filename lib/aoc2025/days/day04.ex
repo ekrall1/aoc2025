@@ -6,13 +6,13 @@ defmodule Aoc2025.Days.Day04 do
   @behaviour Aoc2025.Day
 
   @typedoc "node type"
-  @type bfs_node :: {non_neg_integer(), non_neg_integer()}
+  @type bfs_node :: Aoc2025.Util.bfs_node()
 
   @typedoc "grid"
-  @type grid :: [[String.t()]]
+  @type grid :: Aoc2025.Util.grid()
 
   @typedoc "grid object"
-  @type grid_obj :: %{grid: grid(), rows: non_neg_integer(), cols: non_neg_integer()}
+  @type grid_obj :: Aoc2025.Util.grid_obj()
 
   @spec part1(String.t()) :: String.t()
   @doc """
@@ -27,7 +27,7 @@ defmodule Aoc2025.Days.Day04 do
   """
   @impl Aoc2025.Day
   def part1(input) do
-    grid = parse_grid(input)
+    grid = Aoc2025.Util.parse_grid(input)
     goal = fn {r, c} -> r == grid.rows - 1 and c == grid.cols - 1 end
 
     neighbors = fn {r, c} ->
@@ -63,21 +63,11 @@ defmodule Aoc2025.Days.Day04 do
   """
   @impl Aoc2025.Day
   def part2(input) do
-    grid = parse_grid(input)
+    grid = Aoc2025.Util.parse_grid(input)
 
     {_, ans} = recurse(grid, [])
 
     Integer.to_string(length(ans))
-  end
-
-  @spec parse_grid(String.t()) :: grid_obj()
-  defp parse_grid(input) do
-    grid =
-      input
-      |> String.split("\n", trim: true)
-      |> Enum.map(&String.graphemes/1)
-
-    %{grid: grid, rows: length(grid), cols: length(hd(grid))}
   end
 
   @spec update_grid(grid_obj(), [bfs_node()]) :: grid_obj()
@@ -92,14 +82,9 @@ defmodule Aoc2025.Days.Day04 do
     %{grid | grid: new_grid}
   end
 
-  @spec get_cell(grid_obj(), non_neg_integer(), non_neg_integer()) :: String.t()
-  defp get_cell(grid, r, c) do
-    grid.grid |> Enum.at(r) |> Enum.at(c)
-  end
-
   @spec is_at(grid_obj(), non_neg_integer(), non_neg_integer()) :: boolean()
   defp is_at(grid, r, c) do
-    get_cell(grid, r, c) == "@"
+    Aoc2025.Util.get_cell(grid, r, c) == "@"
   end
 
   @spec neighbor_at_count(grid_obj(), non_neg_integer(), non_neg_integer()) :: non_neg_integer()
@@ -108,7 +93,9 @@ defmodule Aoc2025.Days.Day04 do
     |> Enum.count(fn {dr, dc} ->
       nr = r + dr
       nc = c + dc
-      nr >= 0 and nr < grid.rows and nc >= 0 and nc < grid.cols and get_cell(grid, nr, nc) == "@"
+
+      nr >= 0 and nr < grid.rows and nc >= 0 and nc < grid.cols and
+        Aoc2025.Util.get_cell(grid, nr, nc) == "@"
     end)
   end
 
