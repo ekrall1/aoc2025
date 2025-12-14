@@ -17,6 +17,11 @@ defmodule Aoc2025.Days.Day07 do
   @type visit_fn ::
           (bfs_node(), [bfs_node()], [bfs_node()] -> {[bfs_node()], [bfs_node()]})
 
+  @type path_count :: non_neg_integer()
+
+  @type ways_map :: %{optional(bfs_node()) => path_count()}
+
+  @spec part1(String.t()) :: String.t()
   @doc """
   Solves part 1 of day 07.
 
@@ -34,7 +39,6 @@ defmodule Aoc2025.Days.Day07 do
     goal = fn {r, _c} -> r == -1 end
 
     neighbors = fn {r, c} ->
-      # if we are on the last row, no moves
       if r + 1 >= grid.rows do
         []
       else
@@ -52,7 +56,6 @@ defmodule Aoc2025.Days.Day07 do
     visit_fn = fn {r, c}, acc, splits ->
       splits2 =
         if r + 1 < grid.rows and Aoc2025.Util.get_cell(grid, r + 1, c) == "^" do
-          # count this caret as a split trigger
           [{r + 1, c} | splits]
         else
           splits
@@ -68,6 +71,7 @@ defmodule Aoc2025.Days.Day07 do
     Integer.to_string(MapSet.size(set))
   end
 
+  @spec part2(String.t()) :: String.t()
   @doc """
   Solves part 2 of day 07.
 
@@ -75,12 +79,14 @@ defmodule Aoc2025.Days.Day07 do
 
       iex> test_input = File.read!("tests/test_input/day07.txt")
       iex> Aoc2025.Days.Day07.part2(test_input)
-      "Day 07 Part 2 not implemented yet"
+      "40"
 
   """
   @impl Aoc2025.Day
-  def part2(_input) do
-    "Day 07 Part 2 not implemented yet"
+  def part2(input) do
+    grid = Aoc2025.Util.parse_grid(input)
+    start = get_start(grid)
+    Integer.to_string(count_paths(grid, start))
   end
 
   @spec bfs(
@@ -160,5 +166,45 @@ defmodule Aoc2025.Days.Day07 do
         if cell == "S", do: {r, c}, else: nil
       end)
     end)
+  end
+
+  @spec count_paths(grid_obj(), bfs_node()) :: path_count()
+  defp count_paths(grid, {sr, sc}) do
+    rows = grid.rows
+    cols = grid.cols
+
+    ways0 = %{{sr, sc} => 1}
+
+    ways_final =
+      Enum.reduce(0..(rows - 2), ways0, fn r, ways ->
+        Enum.reduce(0..(cols - 1), ways, fn c, ways2 ->
+          count = Map.get(ways2, {r, c}, 0)
+
+          if count == 0 do
+            ways2
+          else
+            if Aoc2025.Util.get_cell(grid, r + 1, c) == "^" do
+              ways2
+              |> maybe_add({r + 1, c - 1}, count, cols)
+              |> maybe_add({r + 1, c + 1}, count, cols)
+            else
+              Map.update(ways2, {r + 1, c}, count, &(&1 + count))
+            end
+          end
+        end)
+      end)
+
+    Enum.reduce(0..(cols - 1), 0, fn c, acc ->
+      acc + Map.get(ways_final, {rows - 1, c}, 0)
+    end)
+  end
+
+  @spec maybe_add(ways_map(), bfs_node(), path_count(), non_neg_integer()) :: ways_map()
+  defp maybe_add(ways, {r, c}, count, cols) do
+    if c >= 0 and c < cols do
+      Map.update(ways, {r, c}, count, &(&1 + count))
+    else
+      ways
+    end
   end
 end
