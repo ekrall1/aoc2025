@@ -60,14 +60,16 @@ defmodule Aoc2025.Days.Day08 do
 
       iex> test_input = File.read!("tests/test_input/day08.txt")
       iex> Aoc2025.Days.Day08.part2(test_input)
-      "Day 8 Part 2 not implemented yet"
+      "25272"
 
   """
   @impl Aoc2025.Day
-  def part2(_input) do
-    # TODO: Implement Day 8 Part 2
-    # input is the raw file content as a string
-    "Day 8 Part 2 not implemented yet"
+  def part2(input) do
+    points = parse_points(input)
+
+    points
+    |> last_merge_x_product()
+    |> Integer.to_string()
   end
 
   @spec parse_points(String.t()) :: [point3()]
@@ -177,5 +179,49 @@ defmodule Aoc2025.Days.Day08 do
     end)
     |> Map.values()
     |> Enum.sort(:desc)
+  end
+
+  @spec last_merge_x_product([point3()]) :: integer()
+  defp last_merge_x_product(points) do
+    n = length(points)
+
+    edges =
+      points
+      |> Enum.with_index()
+      |> Enum.reduce([], fn {p1, i}, acc ->
+        Enum.reduce(points |> Enum.with_index(), acc, fn {p2, j}, acc2 ->
+          if j > i do
+            [{euclidean(p1, p2), {i, j}} | acc2]
+          else
+            acc2
+          end
+        end)
+      end)
+      |> Enum.sort_by(fn {d2, _pair} -> d2 end)
+
+    dsu0 = dsu_new(n)
+
+    {last_pair, _dsu_final, _merges} =
+      Enum.reduce_while(edges, {nil, dsu0, 0}, fn {_d2, {i, j}}, {last, dsu, merges} ->
+        {merged?, dsu2} = dsu_union(dsu, i, j)
+
+        if merged? do
+          merges2 = merges + 1
+          last2 = {i, j}
+
+          if merges2 == n - 1 do
+            {:halt, {last2, dsu2, merges2}}
+          else
+            {:cont, {last2, dsu2, merges2}}
+          end
+        else
+          {:cont, {last, dsu2, merges}}
+        end
+      end)
+
+    {i, j} = last_pair
+    {xi, _yi, _zi} = Enum.at(points, i)
+    {xj, _yj, _zj} = Enum.at(points, j)
+    xi * xj
   end
 end
