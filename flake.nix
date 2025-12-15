@@ -15,6 +15,7 @@
 
       beam = pkgs.beam.packages.erlang_27;
       elixir = beam.elixir_1_17;
+      z3 = pkgs.z3;
 
       vscode = pkgs.vscode-with-extensions.override {
         vscodeExtensions =
@@ -46,6 +47,7 @@
           bashInteractive
           cacert
           mix2nix
+          z3
         ];
         shellHook = ''
           echo "Entering Elixir dev shell (OTP: ${beam.erlang.version}, Elixir: ${elixir.version})"
@@ -62,6 +64,7 @@
           elixir
           beam.rebar3
           pkgs.cacert
+          z3
         ];
         phases = [
           "unpackPhase"
