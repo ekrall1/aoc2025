@@ -56,7 +56,7 @@ defmodule Aoc2025.Days.Day11 do
     end)
   end
 
-  @spec parse_line(String.t()) :: {node(), [node()]}
+  @spec parse_line(String.t()) :: {graph_node(), [graph_node()]}
   defp parse_line(line) do
     [lhs, rhs] = String.split(line, ~r/\s*:\s*/, parts: 2)
 
