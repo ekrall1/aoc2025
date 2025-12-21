@@ -288,7 +288,6 @@ defmodule Aoc2025.Days.Day10 do
         args: ["-in", "-smt2"]
       ])
 
-    # Send full script (ensure it ends with newline)
     Port.command(port, smt2)
     Port.command(port, "\n")
 
