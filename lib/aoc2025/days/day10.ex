@@ -85,6 +85,70 @@ defmodule Aoc2025.Days.Day10 do
     |> MapSet.new()
   end
 
+  @spec formulate_machine_problem(problem_input()) :: String.t()
+  defp formulate_machine_problem(%{goal: goal, wiring: wiring}) do
+    n_lights = length(goal)
+    m_buttons = length(wiring)
+
+    decls = get_decls(m_buttons, n_lights)
+    binaries = get_binaries(n_lights)
+    int_vars = get_intvars(m_buttons)
+    constraints = get_parity_constraints(goal, wiring)
+    objective = get_objective(n_lights)
+
+    Enum.join(decls ++ binaries ++ int_vars ++ constraints ++ [objective, "(check-sat)", "(get-objectives)"], "\n") <> "\n"
+  end
+
+  defp get_decls(m, n) do
+    [
+      "(set-option :model true)",
+      "(set-option :pp.decimal true)"
+    ] ++
+      (for i <- 0..(n - 1), do: "(declare-const b#{i} Int)") ++
+      (for j <- 0..(m - 1), do: "(declare-const k#{j} Int)")
+  end
+
+  defp get_binaries(n) do
+    for i <- 0..(n - 1) do
+      "(assert (or (= b#{i} 0) (= b#{i} 1)))"
+    end
+  end
+
+  defp get_intvars(m) do
+    for j <- 0..(m - 1) do
+      "(assert (>= k#{j} 0))"
+    end
+  end
+
+  defp get_parity_constraints(goal, wiring) do
+    for {g_j, j} <- Enum.with_index(goal) do
+      terms =
+        wiring
+        |> Enum.with_index()
+        |> Enum.reduce([], fn {btn, i}, acc ->
+          if j in btn, do: ["b#{i}" | acc], else: acc
+        end)
+        |> Enum.reverse()
+
+      lhs =
+        case terms do
+          [] -> "0"
+          [t] -> t
+          ts -> "(+ " <> Enum.join(ts, " ") <> ")"
+        end
+
+      "(assert (= #{lhs} (+ #{g_j} (* 2 k#{j}))))"
+    end
+  end
+
+  defp get_objective(n) do
+      case n do
+      0 -> "(minimize 0)"
+      1 -> "(minimize b0)"
+      _ -> "(minimize (+ " <> Enum.join((for i <- 0..(n - 1), do: "b#{i}"), " ") <> "))"
+    end
+  end
+
   @doc """
   Solves part 2 of day 10.
 
