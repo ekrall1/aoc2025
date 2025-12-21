@@ -167,6 +167,7 @@ defmodule Aoc2025.Days.Day10 do
     ) <> "\n"
   end
 
+  @spec get_decls(non_neg_integer(), non_neg_integer()) :: [String.t()]
   defp get_decls(m, n) do
     [
       "(set-option :model true)",
@@ -176,6 +177,7 @@ defmodule Aoc2025.Days.Day10 do
       for j <- 0..(n - 1), do: "(declare-const k#{j} Int)"
   end
 
+  @spec get_decls_p2(non_neg_integer()) :: [String.t()]
   defp get_decls_p2(m) do
     [
       "(set-option :model true)",
@@ -184,24 +186,28 @@ defmodule Aoc2025.Days.Day10 do
       for(i <- 0..(m - 1), do: "(declare-const b#{i} Int)")
   end
 
+  @spec get_binaries(non_neg_integer()) :: [String.t()]
   defp get_binaries(n) do
     for i <- 0..(n - 1) do
       "(assert (or (= b#{i} 0) (= b#{i} 1)))"
     end
   end
 
+  @spec get_intvars(non_neg_integer()) :: [String.t()]
   defp get_intvars(m) do
     for j <- 0..(m - 1) do
       "(assert (>= k#{j} 0))"
     end
   end
 
+  @spec get_press_nonneg(non_neg_integer()) :: [String.t()]
   defp get_press_nonneg(m_buttons) do
     for i <- 0..(m_buttons - 1) do
       "(assert (>= b#{i} 0))"
     end
   end
 
+  @spec get_parity_constraints(goal(), wiring()) :: [String.t()]
   defp get_parity_constraints(goal, wiring) do
     for {g_j, j} <- Enum.with_index(goal) do
       terms =
@@ -223,6 +229,7 @@ defmodule Aoc2025.Days.Day10 do
     end
   end
 
+  @spec get_joltage_constraints(joltage(), wiring()) :: [String.t()]
   defp get_joltage_constraints(joltage, wiring) do
     for {g_j, j} <- Enum.with_index(joltage) do
       terms =
@@ -244,6 +251,7 @@ defmodule Aoc2025.Days.Day10 do
     end
   end
 
+  @spec get_objective(non_neg_integer()) :: String.t()
   defp get_objective(n) do
     case n do
       0 -> "(minimize 0)"
@@ -252,6 +260,7 @@ defmodule Aoc2025.Days.Day10 do
     end
   end
 
+  @spec get_model(non_neg_integer(), String.t()) :: String.t()
   defp get_model(n, base) do
     model =
       if n == 0 do
@@ -264,6 +273,7 @@ defmodule Aoc2025.Days.Day10 do
     model <> "(exit)\n"
   end
 
+  @spec run_model!(String.t()) :: String.t()
   defp run_model!(model) do
     try do
       run!(model)
@@ -294,6 +304,7 @@ defmodule Aoc2025.Days.Day10 do
     collect(port, "")
   end
 
+  @spec collect(port(), String.t()) :: String.t()
   defp collect(port, acc) do
     receive do
       {^port, {:data, chunk}} ->
