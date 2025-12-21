@@ -25,13 +25,27 @@ defmodule Aoc2025.Days.Day10 do
 
       iex> test_input = File.read!("tests/test_input/day10.txt")
       iex> Aoc2025.Days.Day10.part1(test_input)
-      "Day 10 Part 1 not implemented yet"
+      "7"
 
   """
   @impl Aoc2025.Day
   def part1(input) do
-    _ = parse_input(input)
-    "part 1 not implemented yet"
+    problems = parse_input(input)
+
+    total =
+      problems
+      |> Enum.map(fn p ->
+        base = formulate_machine_problem(p)
+        n = length(p.wiring)
+        model = get_model(n, base)
+        out = run_model!(model)
+        sum_soln_vars(out)
+      end)
+
+    Enum.reduce(total, 0, fn ans, acc ->
+      acc + ans
+    end)
+    |> Integer.to_string()
   end
 
   @spec parse_input(String.t()) :: [problem_input()]
@@ -41,11 +55,14 @@ defmodule Aoc2025.Days.Day10 do
     Enum.reduce(lines, [], fn line, acc ->
       parts = Regex.run(@line_re, line)
 
-      [%{
-        goal: parse_goal(Enum.at(parts, 1)),
-        wiring: parse_wiring(Enum.at(parts, 2)),
-        joltage: parse_joltage(Enum.at(parts, 3))
-      } | acc]
+      [
+        %{
+          goal: parse_goal(Enum.at(parts, 1)),
+          wiring: parse_wiring(Enum.at(parts, 2)),
+          joltage: parse_joltage(Enum.at(parts, 3))
+        }
+        | acc
+      ]
     end)
   end
 
@@ -67,6 +84,7 @@ defmodule Aoc2025.Days.Day10 do
       |> case do
         "" ->
           []
+
         s ->
           s
           |> String.split(",", trim: true)
@@ -91,12 +109,16 @@ defmodule Aoc2025.Days.Day10 do
     m_buttons = length(wiring)
 
     decls = get_decls(m_buttons, n_lights)
-    binaries = get_binaries(n_lights)
-    int_vars = get_intvars(m_buttons)
+    binaries = get_binaries(m_buttons)
+    int_vars = get_intvars(n_lights)
     constraints = get_parity_constraints(goal, wiring)
-    objective = get_objective(n_lights)
+    objective = get_objective(m_buttons)
 
-    Enum.join(decls ++ binaries ++ int_vars ++ constraints ++ [objective, "(check-sat)", "(get-objectives)"], "\n") <> "\n"
+    Enum.join(
+      decls ++
+        binaries ++ int_vars ++ constraints ++ [objective, "(check-sat)", "(get-objectives)"],
+      "\n"
+    ) <> "\n"
   end
 
   defp get_decls(m, n) do
@@ -104,8 +126,8 @@ defmodule Aoc2025.Days.Day10 do
       "(set-option :model true)",
       "(set-option :pp.decimal true)"
     ] ++
-      (for i <- 0..(n - 1), do: "(declare-const b#{i} Int)") ++
-      (for j <- 0..(m - 1), do: "(declare-const k#{j} Int)")
+      for(i <- 0..(m - 1), do: "(declare-const b#{i} Int)") ++
+      for j <- 0..(n - 1), do: "(declare-const k#{j} Int)"
   end
 
   defp get_binaries(n) do
@@ -142,11 +164,79 @@ defmodule Aoc2025.Days.Day10 do
   end
 
   defp get_objective(n) do
-      case n do
+    case n do
       0 -> "(minimize 0)"
       1 -> "(minimize b0)"
-      _ -> "(minimize (+ " <> Enum.join((for i <- 0..(n - 1), do: "b#{i}"), " ") <> "))"
+      _ -> "(minimize (+ " <> Enum.join(for(i <- 0..(n - 1), do: "b#{i}"), " ") <> "))"
     end
+  end
+
+  defp get_model(n, base) do
+    model =
+      if n == 0 do
+        base
+      else
+        vars = Enum.join(for(i <- 0..(n - 1), do: "b#{i}"), " ")
+        base <> "(get-value (#{vars}))\n"
+      end
+
+    model <> "(exit)\n"
+  end
+
+  defp run_model!(model) do
+    try do
+      run!(model)
+    rescue
+      e ->
+        IO.puts("=== Z3 MODEL BEGIN ===")
+        IO.puts(model)
+        IO.puts("=== Z3 MODEL END ===")
+        reraise(e, __STACKTRACE__)
+    end
+  end
+
+  @spec run!(String.t()) :: String.t()
+  def run!(smt2) do
+    z3 = System.find_executable("z3") || raise "z3 not found in PATH"
+
+    port =
+      Port.open({:spawn_executable, z3}, [
+        :binary,
+        :exit_status,
+        :stderr_to_stdout,
+        args: ["-in", "-smt2"]
+      ])
+
+    # Send full script (ensure it ends with newline)
+    Port.command(port, smt2)
+    Port.command(port, "\n")
+
+    collect(port, "")
+  end
+
+  defp collect(port, acc) do
+    receive do
+      {^port, {:data, chunk}} ->
+        collect(port, acc <> chunk)
+
+      {^port, {:exit_status, 0}} ->
+        acc
+
+      {^port, {:exit_status, status}} ->
+        raise "z3 failed (exit #{status}):\n#{acc}"
+    after
+      30_000 ->
+        Port.close(port)
+        raise "z3 timed out:\n#{acc}"
+    end
+  end
+
+  @spec sum_soln_vars(String.t()) :: non_neg_integer()
+  defp sum_soln_vars(out) when is_binary(out) do
+    Regex.scan(~r/\(\s*b\d+\s+([01])\s*\)/, out)
+    |> Enum.reduce(0, fn [_full, v], acc ->
+      acc + String.to_integer(v)
+    end)
   end
 
   @doc """
