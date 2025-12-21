@@ -11,7 +11,7 @@ defmodule Aoc2025.Days.Day10 do
 
   @type wiring :: [button()]
 
-  @type joltage :: MapSet.t(non_neg_integer())
+  @type joltage :: [non_neg_integer()]
 
   @type problem_input :: %{goal: goal(), wiring: wiring(), joltage: joltage()}
 
@@ -36,6 +36,37 @@ defmodule Aoc2025.Days.Day10 do
       problems
       |> Enum.map(fn p ->
         base = formulate_machine_problem(p)
+        n = length(p.wiring)
+        model = get_model(n, base)
+        out = run_model!(model)
+        sum_soln_vars(out)
+      end)
+
+    Enum.reduce(total, 0, fn ans, acc ->
+      acc + ans
+    end)
+    |> Integer.to_string()
+  end
+
+  @spec part2(String.t()) :: String.t()
+  @doc """
+  Solves part 2 of day 10.
+
+  ## Examples
+
+      iex> test_input = File.read!("tests/test_input/day10.txt")
+      iex> Aoc2025.Days.Day10.part1(test_input)
+      "33"
+
+  """
+  @impl Aoc2025.Day
+  def part2(input) do
+    problems = parse_input(input)
+
+    total =
+      problems
+      |> Enum.map(fn p ->
+        base = formulate_joltage_problem(p)
         n = length(p.wiring)
         model = get_model(n, base)
         out = run_model!(model)
@@ -100,7 +131,6 @@ defmodule Aoc2025.Days.Day10 do
     |> String.split(",", trim: true)
     |> Enum.map(&String.trim/1)
     |> Enum.map(&String.to_integer/1)
-    |> MapSet.new()
   end
 
   @spec formulate_machine_problem(problem_input()) :: String.t()
@@ -121,6 +151,22 @@ defmodule Aoc2025.Days.Day10 do
     ) <> "\n"
   end
 
+  @spec formulate_joltage_problem(problem_input()) :: String.t()
+  defp formulate_joltage_problem(%{joltage: joltage, wiring: wiring}) do
+    m_buttons = length(wiring)
+
+    decls = get_decls_p2(m_buttons)
+    presses = get_press_nonneg(m_buttons)
+    constraints = get_joltage_constraints(joltage, wiring)
+    objective = get_objective(m_buttons)
+
+    Enum.join(
+      decls ++
+        presses ++ constraints ++ [objective, "(check-sat)", "(get-objectives)"],
+      "\n"
+    ) <> "\n"
+  end
+
   defp get_decls(m, n) do
     [
       "(set-option :model true)",
@@ -128,6 +174,14 @@ defmodule Aoc2025.Days.Day10 do
     ] ++
       for(i <- 0..(m - 1), do: "(declare-const b#{i} Int)") ++
       for j <- 0..(n - 1), do: "(declare-const k#{j} Int)"
+  end
+
+  defp get_decls_p2(m) do
+    [
+      "(set-option :model true)",
+      "(set-option :pp.decimal true)"
+    ] ++
+      for(i <- 0..(m - 1), do: "(declare-const b#{i} Int)")
   end
 
   defp get_binaries(n) do
@@ -139,6 +193,12 @@ defmodule Aoc2025.Days.Day10 do
   defp get_intvars(m) do
     for j <- 0..(m - 1) do
       "(assert (>= k#{j} 0))"
+    end
+  end
+
+  defp get_press_nonneg(m_buttons) do
+    for i <- 0..(m_buttons - 1) do
+      "(assert (>= b#{i} 0))"
     end
   end
 
@@ -160,6 +220,27 @@ defmodule Aoc2025.Days.Day10 do
         end
 
       "(assert (= #{lhs} (+ #{g_j} (* 2 k#{j}))))"
+    end
+  end
+
+  defp get_joltage_constraints(joltage, wiring) do
+    for {g_j, j} <- Enum.with_index(joltage) do
+      terms =
+        wiring
+        |> Enum.with_index()
+        |> Enum.reduce([], fn {btn, i}, acc ->
+          if j in btn, do: ["b#{i}" | acc], else: acc
+        end)
+        |> Enum.reverse()
+
+      lhs =
+        case terms do
+          [] -> "0"
+          [t] -> t
+          ts -> "(+ " <> Enum.join(ts, " ") <> ")"
+        end
+
+      "(assert (= #{lhs} #{g_j}))"
     end
   end
 
@@ -233,33 +314,9 @@ defmodule Aoc2025.Days.Day10 do
 
   @spec sum_soln_vars(String.t()) :: non_neg_integer()
   defp sum_soln_vars(out) when is_binary(out) do
-    Regex.scan(~r/\(\s*b\d+\s+([01])\s*\)/, out)
+    Regex.scan(~r/\(\s*b\d+\s+(\d+)\s*\)/, out)
     |> Enum.reduce(0, fn [_full, v], acc ->
       acc + String.to_integer(v)
     end)
   end
-
-  @doc """
-  Solves part 2 of day 10.
-
-  ## Examples
-
-      iex> test_input = File.read!("tests/test_input/day10.txt")
-      iex> Aoc2025.Days.Day10.part2(test_input)
-      "Day 10 Part 2 not implemented yet"
-
-  """
-  @impl Aoc2025.Day
-  def part2(_input) do
-    # TODO: Implement Day 10 Part 2
-    # input is the raw file content as a string
-    "Day 10 Part 2 not implemented yet"
-  end
-
-  # Helper functions can go here
-  # defp parse_input(input) do
-  #   input
-  #   |> String.trim()
-  #   |> String.split("\n")
-  # end
 end
