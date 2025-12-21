@@ -95,6 +95,10 @@
         version = "0.1.0";
         src = srcIncl;
 
+        nativeBuildInputs = [
+          z3
+        ];
+
         doCheck = true;
         checkPhase = ''
           set -eu
