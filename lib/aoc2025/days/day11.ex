@@ -40,7 +40,7 @@ defmodule Aoc2025.Days.Day11 do
 
       iex> test_input = File.read!("tests/test_input/day11-2.txt")
       iex> Aoc2025.Days.Day11.part2(test_input)
-      "Day 11 Part 2 not implemented yet"
+      "2"
 
   """
   @impl Aoc2025.Day
